@@ -1,39 +1,142 @@
 import React, {Component} from 'react';
-import fetchJsonp from 'fetch-jsonp';
+import * as d3 from 'd3';
+import * as d3_transition from 'd3-transition';
+
+import './App.css';
 
 const galleryMachine = {
   start: {
-    SEARCH: 'loading'
+    PLAYGAME: 'Player1Turn'
   },
-  loading: {
-    SEARCH_SUCCESS: 'gallery',
-    SEARCH_FAILURE: 'error',
-    CANCEL_SEARCH: 'gallery'
+  player1Turn: {
+    PLAY: 'player2Turn',
+    WIN: 'gameOver',
+    QUIT: 'start'
   },
-  error: {
-    SEARCH: 'loading'
+  player2Turn: {
+    PLAY: 'player1Turn',
+    WIN: 'gameOver',
+    QUIT: 'start'  
   },
-  gallery: {
-    SEARCH: 'loading',
-    SELECT_PHOTO: 'photo'
-  },
-  photo: {
-    EXIT_PHOTO: 'gallery'
+  gameOver: {
+    PLAYAGAIN: 'start',
   }
 };
 
-class App extends React.Component {
+const ROWS = 6;
+const COLS = 7;
+let board = {};
+let newBoard = [];
+
+
+class AppTemp extends React.Component {
   constructor() {
     super();
     
     this.state = {
-      gallery: 'start', // finite state
-      query: '',
-      items: []
-    };
+      container: {},
+      player1Color: "red",
+    }
+
+
+    this.createGrid = this.createGrid.bind(this);
+    this.handleClick = this.handleClick.bind(this);
   }
+
+  componentDidMount(){
+    this.createGrid();
+  }
+
+  createGrid(color = 'blue'){
+    this.container = d3.select("div#container").append("svg")
+                    .attr("preserveAspectRatio", "xMinYMin meet")
+                    .attr("viewBox", "0 0 420 420")
+                    .classed("svg-content", true)
+                    .attr("fill", "blue");
+    
+    board = {};
+    for(let i = 0; i < COLS; i++) {
+      board[i] = ROWS;
+    }
+
+    newBoard = [];
+    for(let i = 0; i < 7; i++) {
+      newBoard.push([i]);
+    }    
+    
+    for(let x = 0; x < COLS; x++) {
+        for(let y = 0; y < ROWS; y++) {
+            this.createCircle(this.container, x, y, color);
+        }
+        
+    }
+    var svg = d3.select("div#container")
+  }
+
+  editColumn(cont, x, color){
+    if(x){
+      console.log('working')
+      let count = board[x]-1;
+        if(count >= 0){
+          newBoard[x].push(count);
+          board[x]-=1;
+          cont.append("svg")
+                .append("circle")
+                .attr("cx", x*60 + 30)
+                .attr("cy", 0)
+                .attr("r", 25)
+                .attr("id", x+','+count)
+                .attr("fill", color)
+                .transition()
+                .attr("cy", count*60 + 80)
+        }  
+    }
+  }
+
+  createCircle(cont, x, y, color){
+    cont.append("svg")
+            .append("circle")
+            .attr("cx", x*60 + 30)
+            .attr("cy", y*60 + 80)
+            .attr("r", 25)
+            .attr("id", x+','+y)
+            .attr("fill", color)
+  }
+
+  handleClick(e) {
+    e.preventDefault();
+
+    let target = e.target;
+    let id = target.id;
+    this.editColumn(this.container, this.returnX(id), "green");
+  }
+
+  returnX(str){
+    return str.split(',')[0];
+  }  
   
-  command(nextState, action) {
+  returnY(str){
+    return str.split(',')[1];
+  }
+
+  render() {
+
+    return (
+        <div className="App">
+          <div className="App__Aside">
+            <div className="App-header">Connect 4!</div>
+          </div>
+          <div className="Player section"></div>
+          <div id="container" class="svg-container" color = {this.player1Color} >{onclick=this.handleClick}</div>
+         
+        
+        </div>
+      )
+  }
+
+
+  
+  /* command(nextState, action) {
     switch (nextState) {
       case 'loading':
         // execute the search command
@@ -78,25 +181,11 @@ class App extends React.Component {
     this.transition({ type: 'SEARCH', query: this.state.query });
   }
   
-  search(query) {
-    const encodedQuery = encodeURIComponent(query);
-    
-    setTimeout(() => {      
-      fetchJsonp(
-        `https://api.flickr.com/services/feeds/photos_public.gne?lang=en-us&format=json&tags=${encodedQuery}`,
-        { jsonpCallback: 'jsoncallback' })
-        .then(res => res.json())
-        .then(data => {
-          this.transition({ type: 'SEARCH_SUCCESS', items: data.items });
-        })
-        .catch(error => {
-          this.transition({ type: 'SEARCH_FAILURE' });
-        });
-    }, 1000);
-  }
+
   handleChangeQuery(value) {
     this.setState({ query: value })
   }
+  
   renderForm(state) {
     const searchText = {
       loading: 'Searching...',
@@ -162,9 +251,8 @@ class App extends React.Component {
         <img src={this.state.photo.media.m} className="ui-photo"/>
       </section>
     )
-  }
-  render() {
-    const galleryState = this.state.gallery;
+  } 
+  const galleryState = this.state.gallery;
     
     return (
       <div className="ui-app" data-state={galleryState}>
@@ -172,8 +260,8 @@ class App extends React.Component {
         {this.renderGallery(galleryState)}
         {this.renderPhoto(galleryState)}
       </div>
-    );
-  }
+    ); 
+  } */
 }
 
-export default App;
+export default AppTemp;
