@@ -100,7 +100,16 @@ class AppTemp extends React.Component {
               this.setState({who: this.state.turn.name});
               console.log(this.state.turn);
             }
-            return null;//return this.winner();
+            return null;
+          }
+
+          console.log(Object.values(board));
+          if(!Object.values(board).join('').match(/[1-9]/g)){
+            this.setState({somebodyWon: true,
+            turn: {...this.state.turn,
+                  name: "nobody"}
+                });
+            return null;
           }
           
           this.setState({turn: this.state.turn == this.state.player1 ?
@@ -179,7 +188,7 @@ class AppTemp extends React.Component {
           <div className="App__Aside">
             <div className="App-header">{this.state.turn.name +"'s turn  "}</div>
           </div>
-          <div id="container" class="svg-container" color={this.state.turn.color} onClick={this.handleClick}></div>
+          <div id="container" className="svg-container" color={this.state.turn.color} onClick={this.handleClick}></div>
         </div>
       )
   }

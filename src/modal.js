@@ -11,7 +11,7 @@ export class WinModal extends React.Component {
             return (
                 <div className={show ? 'modal display-block' : 'modal display-none'}>
                     <section className='modal-main'>
-                        <header>{player} wins!</header>
+                        <header>{player != "nobody" ? player +" wins!" : "Draw"}</header>
                         <button onClick={this.props.onclick}>Play again?</button>
                     </section>
                 </div>

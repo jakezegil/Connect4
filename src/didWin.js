@@ -53,5 +53,4 @@ export default function didWin(board){
       }
     }
     return false;
-
   }
