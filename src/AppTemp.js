@@ -5,7 +5,7 @@ import didWin from './didWin.js';
 import * as constants from './constants.js';
 
 import './App.css';
-import WinModal from './modal';
+import * as modal from './modal';
 
 let board = {};
 let newBoard = [];
@@ -31,6 +31,7 @@ class AppTemp extends React.Component {
     this.createGrid = this.createGrid.bind(this);
     this.createCircle = this.createCircle.bind(this);
     this.handleClick = this.handleClick.bind(this);
+    this.start = this.start.bind(this);
     this.restart = this.restart.bind(this);
     this.play = this.play.bind(this);
     this.returnX = this.returnX.bind(this);
@@ -42,7 +43,7 @@ class AppTemp extends React.Component {
   }
 
   //initializes
-  createGrid(color = 'blue'){
+  createGrid(color = constants.boardColor){
     this.container = d3.select("div#container").append("svg")
                     .attr("preserveAspectRatio", "xMinYMin meet")
                     .attr("viewBox", "0 0 420 420")
@@ -120,6 +121,23 @@ class AppTemp extends React.Component {
             .attr("fill", color)
   }
 
+  start(p1, p2){
+    this.setState({
+      player1: {
+        ...this.state.player1,
+        name: p1
+      },
+      player2: {
+        ...this.state.player2,
+        name: p2
+      },
+      start: false,
+    }, () =>
+    this.setState({
+      turn: this.state.player1
+    }))
+  }
+
   restart(e){
     e.preventDefault();
 
@@ -153,11 +171,12 @@ class AppTemp extends React.Component {
   render() {
     return (
         <div className="App">
-          <WinModal show={this.state.somebodyWon} player={this.state.turn.name} onclick={this.restart}/>
-          <button value= "check it out!" onClick={this.restart}>Quit</button>
+          <header className = "Cool_Header">Connect 4: Stack 'Em Up</header>
+          <modal.WinModal show={this.state.somebodyWon} player={this.state.turn.name} onclick={this.restart}/>
+          <modal.StartModal show={this.state.start} player={this.state.turn.name} onclick={this.start}/>
+          <button className="Fun_Button" onClick={this.restart}>Restart</button>
           
           <div className="App__Aside">
-            <div className="App-header">Connect 4!</div>
             <div className="App-header">{this.state.turn.name +"'s turn  "}</div>
           </div>
           <div id="container" class="svg-container" color={this.state.turn.color} onClick={this.handleClick}></div>

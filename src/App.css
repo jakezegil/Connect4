@@ -1,3 +1,8 @@
+* {
+  background-color: #70C1B3;
+  color: #50514F;
+}
+
 .App {
   text-align: center;
 }
@@ -9,10 +14,8 @@
 }
 
 .App-header {
-  color: gray;
-  font-weight: 300;
-  margin-bottom: 50px;
   font-weight: bold;
+  margin: 50px;
   display: flex;
   font-size: 40px;
 }
@@ -22,7 +25,6 @@
   width: 50%;
   height: 100%; 
   float: left;
-  background-color: rgb(62, 199, 233);
   display: flex;
   flex-wrap: wrap;
   padding: 10px;
@@ -33,6 +35,33 @@
   -webkit-touch-callout: none; /* Disable Android and iOS callouts*/
 }
 
+.Cool_Header{
+  font-weight: bolder;
+  font-size: 50px;
+  color: '#50514F';
+  margin: 30px;
+  text-align: left;
+}
+
+
+.Fun_Button{
+  position: absolute;
+  top: 1%;
+  right: 1%;
+  padding: 30px;
+  border-radius: 30px;
+  font-weight: bold;
+  outline: none;
+  color: #70C1B3;
+  background-color: #50514F;
+  border: none;
+}
+
+.Fun_Button:hover{
+  box-shadow: 10px, 10px, #61dafb;
+  cursor: pointer;
+}
+
 .svg-container {
   display: flex;
   position: relative;
@@ -40,8 +69,7 @@
   height: 100%;
   vertical-align: top;
   overflow-y: visible;
-  background-color: blue;
-  cursor: wait;
+  cursor: pointer;
 }
 .svg-content {
   display: inline-block;
@@ -82,16 +110,7 @@
   z-index: 1;
 
 }
-  .modal-main {
-    position:fixed;
-    background: white;
-    width: 80%;
-    height: auto;
-    top:50%;
-    left:50%;
-    transform: translate(-50%,-50%);
-    z-index: 2;
-  }
+
 
 
 .display-block {
