@@ -1,33 +1,14 @@
 import React, {Component} from 'react';
 import * as d3 from 'd3';
 import * as d3_transition from 'd3-transition';
+import didWin from './didWin.js';
+import * as constants from './constants.js';
 
 import './App.css';
+import WinModal from './modal';
 
-const galleryMachine = {
-  start: {
-    PLAYGAME: 'Player1Turn'
-  },
-  player1Turn: {
-    PLAY: 'player2Turn',
-    WIN: 'gameOver',
-    QUIT: 'start'
-  },
-  player2Turn: {
-    PLAY: 'player1Turn',
-    WIN: 'gameOver',
-    QUIT: 'start'  
-  },
-  gameOver: {
-    PLAYAGAIN: 'start',
-  }
-};
-
-const ROWS = 6;
-const COLS = 7;
 let board = {};
 let newBoard = [];
-
 
 class AppTemp extends React.Component {
   constructor() {
@@ -35,50 +16,69 @@ class AppTemp extends React.Component {
     
     this.state = {
       container: {},
-      player1Color: "red",
+      turn: {},
+      player1: {color: constants.p1Color,
+                name: "Player 1"},
+      player2: {color: constants.p2Color,
+                name: "Player 2"},
+      somebodyWon: false,
+      who: "nobody",
+      start: true,
+
     }
 
 
     this.createGrid = this.createGrid.bind(this);
+    this.createCircle = this.createCircle.bind(this);
     this.handleClick = this.handleClick.bind(this);
+    this.restart = this.restart.bind(this);
+    this.play = this.play.bind(this);
+    this.returnX = this.returnX.bind(this);
+    this.returnY = this.returnY.bind(this);
   }
 
   componentDidMount(){
     this.createGrid();
   }
 
+  //initializes
   createGrid(color = 'blue'){
     this.container = d3.select("div#container").append("svg")
                     .attr("preserveAspectRatio", "xMinYMin meet")
                     .attr("viewBox", "0 0 420 420")
                     .classed("svg-content", true)
                     .attr("fill", "blue");
-    
-    board = {};
-    for(let i = 0; i < COLS; i++) {
-      board[i] = ROWS;
+  
+    this.setState({turn: this.state.player1})
+
+    board = {}; //sets up empty board as full array
+    for(let i = 0; i < constants.COLS; i++) {
+      board[i] = constants.ROWS;
     }
 
-    newBoard = [];
-    for(let i = 0; i < 7; i++) {
-      newBoard.push([i]);
+    newBoard = []; //sets up board to be filled as empty array
+    for(let i = 0; i < constants.COLS; i++) {
+      let rows = [];
+      for(let x = 0; x < constants.ROWS; x++) {
+        rows.push('');
+      }
+      newBoard.push(rows);
     }    
     
-    for(let x = 0; x < COLS; x++) {
-        for(let y = 0; y < ROWS; y++) {
-            this.createCircle(this.container, x, y, color);
-        }
-        
+    //visualize board
+    for(let x = 0; x < constants.COLS; x++) {
+      for(let y = 0; y < constants.ROWS; y++) {
+          this.createCircle(this.container, x, y, color);
+      }
     }
-    var svg = d3.select("div#container")
   }
 
-  editColumn(cont, x, color){
+  //if the click selection is appropriate and the column isn't full, drops a new chip and changes players
+  play(cont, x, color){
     if(x){
-      console.log('working')
       let count = board[x]-1;
         if(count >= 0){
-          newBoard[x].push(count);
+          newBoard[x].splice(constants.ROWS-board[x], 1, color);
           board[x]-=1;
           cont.append("svg")
                 .append("circle")
@@ -89,10 +89,27 @@ class AppTemp extends React.Component {
                 .attr("fill", color)
                 .transition()
                 .attr("cy", count*60 + 80)
-        }  
+
+          this.setState({somebodyWon: didWin(newBoard)});
+          
+          let who = this.state.who;
+          
+          if(didWin(newBoard)){
+            if(who == 'nobody'){
+              this.setState({who: this.state.turn.name});
+              console.log(this.state.turn);
+            }
+            return null;//return this.winner();
+          }
+          
+          this.setState({turn: this.state.turn == this.state.player1 ?
+                                   this.state.player2 : this.state.player1});
+        }
     }
   }
 
+
+  //used to set up board 
   createCircle(cont, x, y, color){
     cont.append("svg")
             .append("circle")
@@ -103,12 +120,26 @@ class AppTemp extends React.Component {
             .attr("fill", color)
   }
 
-  handleClick(e) {
+  restart(e){
     e.preventDefault();
 
+    [...document.getElementById("container").children].forEach(elem => elem.remove());
+
+    this.createGrid();
+    
+    this.setState({
+      somebodyWon: false,
+      who: "nobody",});
+    }
+
+  handleClick(e) {
+
+    e.stopPropagation();
+    e.preventDefault();
     let target = e.target;
     let id = target.id;
-    this.editColumn(this.container, this.returnX(id), "green");
+    this.play(this.container, this.returnX(id), this.state.turn.color);
+
   }
 
   returnX(str){
@@ -120,148 +151,19 @@ class AppTemp extends React.Component {
   }
 
   render() {
-
     return (
         <div className="App">
+          <WinModal show={this.state.somebodyWon} player={this.state.turn.name} onclick={this.restart}/>
+          <button value= "check it out!" onClick={this.restart}>Quit</button>
+          
           <div className="App__Aside">
             <div className="App-header">Connect 4!</div>
+            <div className="App-header">{this.state.turn.name +"'s turn  "}</div>
           </div>
-          <div className="Player section"></div>
-          <div id="container" class="svg-container" color = {this.player1Color} >{onclick=this.handleClick}</div>
-         
-        
+          <div id="container" class="svg-container" color={this.state.turn.color} onClick={this.handleClick}></div>
         </div>
       )
   }
-
-
-  
-  /* command(nextState, action) {
-    switch (nextState) {
-      case 'loading':
-        // execute the search command
-        this.search(action.query);
-        break;
-      case 'gallery':
-        if (action.items) {
-          // update the state with the found items
-          return { items: action.items };
-        }
-        break;
-      case 'photo':
-        if (action.item) {
-          // update the state with the selected photo item
-          return { photo: action.item };
-        }
-        break;
-      default:
-        break;
-    }
-  }
-  
-  transition(action) {
-    const currentGalleryState = this.state.gallery;
-    const nextGalleryState =
-      galleryMachine[currentGalleryState][action.type];
-    
-    if (nextGalleryState) {
-      const nextState = this.command(nextGalleryState, action);
-      
-      this.setState({
-        gallery: nextGalleryState,
-        ...nextState
-      });
-    }
-  }
-  
-  handleSubmit(e) {
-    e.persist();
-    e.preventDefault();
-    
-    this.transition({ type: 'SEARCH', query: this.state.query });
-  }
-  
-
-  handleChangeQuery(value) {
-    this.setState({ query: value })
-  }
-  
-  renderForm(state) {
-    const searchText = {
-      loading: 'Searching...',
-      error: 'Try search again',
-      start: 'Search'
-    }[state] || 'Search';
-    
-    return (
-      <form className="ui-form" onSubmit={e => this.handleSubmit(e)}>
-        <input
-          type="search"
-          className="ui-input"
-          value={this.state.query}
-          onChange={e => this.handleChangeQuery(e.target.value)}
-          placeholder="Search Flickr for photos..."
-          disabled={state === 'loading'}
-        />
-        <div className="ui-buttons">
-          <button
-            className="ui-button"
-            disabled={state === 'loading'}>
-              {searchText}
-          </button>
-          {state === 'loading' &&
-            <button
-              className="ui-button"
-              type="button"
-              onClick={() => this.transition({ type: 'CANCEL_SEARCH' })}>
-              Cancel
-            </button>
-          }
-        </div>
-      </form>
-    );
-  }
-  renderGallery(state) {
-    return (
-      <section className="ui-items" data-state={state}>
-        {state === 'error'
-          ? <span className="ui-error">Uh oh, search failed.</span>
-          : this.state.items.map((item, i) =>
-            <img
-              src={item.media.m}
-              className="ui-item"
-              style={{'--i': i}}
-              key={item.link}
-              onClick={() => this.transition({
-                type: 'SELECT_PHOTO', item
-              })}
-            />
-          )
-        }
-      </section>
-    );
-  }
-  renderPhoto(state) {
-    if (state !== 'photo') return;
-    
-    return (
-      <section
-        className="ui-photo-detail"
-        onClick={() => this.transition({ type: 'EXIT_PHOTO' })}>
-        <img src={this.state.photo.media.m} className="ui-photo"/>
-      </section>
-    )
-  } 
-  const galleryState = this.state.gallery;
-    
-    return (
-      <div className="ui-app" data-state={galleryState}>
-        {this.renderForm(galleryState)}
-        {this.renderGallery(galleryState)}
-        {this.renderPhoto(galleryState)}
-      </div>
-    ); 
-  } */
 }
 
 export default AppTemp;
