@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
 import * as d3 from 'd3';
 import * as d3_transition from 'd3-transition';
-import didWin from './didWin.js';
+import didWinn from './didWin.js';
 import * as constants from './constants.js';
-
 import './App.css';
 import * as modal from './modal';
+import * as connect4Bot from './connect4Bot.js';
 
 let board = {};
 let newBoard = [];
@@ -24,6 +24,7 @@ class AppTemp extends React.Component {
       somebodyWon: false,
       who: "nobody",
       start: true,
+      robot: false,
 
     }
 
@@ -76,7 +77,7 @@ class AppTemp extends React.Component {
 
   //if the click selection is appropriate and the column isn't full, drops a new chip and changes players
   play(cont, x, color){
-    if(x){
+    if(x || x===0){
       let count = board[x]-1;
         if(count >= 0){
           newBoard[x].splice(constants.ROWS-board[x], 1, color);
@@ -91,33 +92,46 @@ class AppTemp extends React.Component {
                 .transition()
                 .attr("cy", count*60 + 80)
 
-          this.setState({somebodyWon: didWin(newBoard)});
+          this.setState({somebodyWon: didWinn(newBoard, this.state.turn.color)});
           
           let who = this.state.who;
           
-          if(didWin(newBoard)){
+          if(didWinn(newBoard, this.state.turn.color)){
             if(who == 'nobody'){
               this.setState({who: this.state.turn.name});
-              console.log(this.state.turn);
             }
             return null;
-          }
+          } //describes a win
 
-          console.log(Object.values(board));
           if(!Object.values(board).join('').match(/[1-9]/g)){
             this.setState({somebodyWon: true,
             turn: {...this.state.turn,
                   name: "nobody"}
                 });
-            return null;
+            return null; //describes a draw
           }
           
           this.setState({turn: this.state.turn == this.state.player1 ?
                                    this.state.player2 : this.state.player1});
+            //this.play(cont, tryMe[0], constants.p2Color);
+          
         }
     }
   }
 
+  componentDidUpdate(prevProps, prevState){
+    if(this.state.robot){
+      if(prevState.turn != this.state.turn && this.state.turn == this.state.player2){
+        if(this.state.turn == this.state.player2){
+          setTimeout(() => {
+            let column = connect4Bot.minimax(newBoard, 5, -Infinity, Infinity, true);
+            console.log(column);
+            this.play(this.container, column[0], constants.p2Color);
+          }, 500)
+        }
+      }
+    }
+  }
 
   //used to set up board 
   createCircle(cont, x, y, color){
@@ -130,7 +144,7 @@ class AppTemp extends React.Component {
             .attr("fill", color)
   }
 
-  start(p1, p2){
+  start(p1, p2, robot){
     this.setState({
       player1: {
         ...this.state.player1,
@@ -141,6 +155,7 @@ class AppTemp extends React.Component {
         name: p2
       },
       start: false,
+      robot: robot,
     }, () =>
     this.setState({
       turn: this.state.player1
@@ -161,6 +176,10 @@ class AppTemp extends React.Component {
 
   handleClick(e) {
 
+    if(this.state.turn == this.state.player2 && this.state.robot){
+      return null;
+    }
+
     e.stopPropagation();
     e.preventDefault();
     let target = e.target;
@@ -178,7 +197,9 @@ class AppTemp extends React.Component {
   }
 
   render() {
+
     return (
+
         <div className="App">
           <header className = "Cool_Header">Connect 4: Stack 'Em Up</header>
           <modal.WinModal show={this.state.somebodyWon} player={this.state.turn.name} onclick={this.restart}/>

@@ -28,6 +28,7 @@ export class StartModal extends React.Component {
             player2: "Player 2",
         }
 
+        this.handleClick  = this.handleClick. bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
@@ -42,11 +43,22 @@ export class StartModal extends React.Component {
         });
     }
 
+    handleClick(e){
+        let target = e.target;
+        let value = target.value;
+        let name = target.name;
+
+        this.setState({
+          [name]: !value
+        });
+    }
+
     handleSubmit(e){
         e.preventDefault();
 
-        this.props.onclick(this.state.player1, this.state.player2);
+        this.props.onclick(this.state.player1, this.state.player2, this.state.robot);
     }
+
     
     render() {
         const show = this.props.show;
@@ -63,8 +75,11 @@ export class StartModal extends React.Component {
                             <label className="FormField__Label" htmlFor="player2">Player 2</label>
                             <input type="name" id="player2"  className="FormField__Input" placeholder="Player 2" name="player2" value={this.state.password} onChange={this.handleChange} />
                         </div>
+                        <label className="FormField__CheckboxLabel">
+                            <input className="FormField__Checkbox" type = "checkbox" name="robot" value={this.state.robot} onClick={this.handleClick} /> Play against a Robot
+                        </label>
                         <div className="FormField">
-                            <button id ="submit" className="FormField__Button">Sign Up</button>
+                            <button id ="submit" className="FormField__Button">Start</button>
                         </div>
                     </form>
                 </div>

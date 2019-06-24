@@ -1,7 +1,48 @@
 import React from 'react';
 import * as constants from './constants.js';
 
-export default function didWin(board){
+
+
+  //now using didWinn, more concise
+
+  export default function didWinn(board, color){
+      for(let col = 0; col < constants.COLS-3; col++){
+          for(let row = 0; row < constants.ROWS; row++){
+              if(board[col][row] == color && board[col+1][row] == color && board[col+2][row] == color && board[col+3][row] == color){
+                //console.log('#1') 
+                return true;
+              }
+          }
+      }
+      for(let col = 0; col < constants.COLS; col++){
+        for(let row = 0; row < constants.ROWS-3; row++){
+            if(board[col][row] == color && board[col][row+1] == color && board[col][row+2] == color && board[col][row+3] == color){
+              //console.log('#2')
+              return true;
+            }
+        }
+    }
+    for(let col = 0; col < constants.COLS-3; col++){
+        for(let row = 0; row < constants.ROWS-3; row++){
+            if(board[col][row] == color && board[col+1][row+1] == color && board[col+2][row+2] == color && board[col+3][row+3] == color){
+                //console.log('#3')
+              return true;
+            }
+        }
+    }
+    for(let col = 3; col < constants.COLS; col++){
+        for(let row = 0; row < constants.ROWS; row++){
+            if(board[col][row] == color && board[col-1][row+1] == color && board[col-2][row+2] == color && board[col-3][row+3] == color){
+              //console.log('#4')
+              return true;
+            }
+        }
+    }
+    return false;
+  }
+  
+  
+  export function didWin(board){
 
     for(let count = 0, x = 0; x < board.length; x++) { //checks columns
       for(let y = 0; y < board[x].length; y++) {
